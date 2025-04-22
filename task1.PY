@@ -1,0 +1,30 @@
+import pandas as pd
+import numpy as np
+df = pd.read_csv('netflix_titles_nov_2019.csv')
+print("Initial Data Overview:")
+print(df.info())
+print("\nMissing Values:")
+print(df.isnull().sum())
+df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_')
+df.drop_duplicates(inplace=True)
+df['director'] = df['director'].fillna('No Director Listed')
+df['cast'] = df['cast'].fillna('No Cast Listed')
+df['country'] = df['country'].fillna('Country Not Specified')
+df['rating'] = df['rating'].fillna('Not Rated')
+df['duration'] = df['duration'].fillna('Unknown Duration')
+df['date_added'] = pd.to_datetime(df['date_added'], errors='coerce')
+df['added_year'] = df['date_added'].dt.year
+df['added_month'] = df['date_added'].dt.month_name()
+text_columns = ['title', 'director', 'cast', 'country', 'rating', 'duration', 'listed_in', 'description']
+for col in text_columns:
+    df[col] = df[col].astype(str).str.strip().str.lower()
+df['genres'] = df['listed_in'].str.split(', ')
+df['countries'] = df['country'].str.split(', ')
+df['genres'] = df['genres'].apply(lambda x: [i.strip() for i in x])
+df['countries'] = df['countries'].apply(lambda x: [i.strip() for i in x])
+df = pd.get_dummies(df, columns=['type'], prefix='', prefix_sep='')
+print("\nCleaned Data Overview:")
+print(df.info())
+print(df.head())
+df.to_csv('cleaned_netflix_titles.csv', index=False)
+print("\n✅ Cleaned data saved as 'cleaned_netflix_titles.csv'")
